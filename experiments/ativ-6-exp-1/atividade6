@@ -1,0 +1,29 @@
+-	Foi selecionado a instância "Ubuntu Server 20.04 LTS (HVM), SSD Volume Type";
+-	A instância foi inicializada com configurações padrão, com exceção do armazenamento que precisou ser alterado para 16gb pois o experimento, num primeiro momento, lotou a máquina configurada com 8gb;
+-	Com a instância iniciada, foi utilizado o comando "sudo apt update" para atualizar o sistema;
+-	Criou-se uma chave ssh e depois a movemos com os comandos:
+	ssh-keygen
+	cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+-	Desta forma, as máquinas criadas a partir desta imagem terão acesso ssh liberado;
+-	Antes de seguir com o experimento, é necessário instalar o Docker para Ubuntu;
+-	Com  o docker instalado, segui-se as instruções contidas no link do repositório:
+	https://github.com/henricsoares/Distributed-DCGAN
+-	Após baixar o Dataset e construir o container, foi gerado uma imagem da máquina virtual e a instância foi terminada;
+-	Em seguida, criou-se um security group com as seguintes Inbound Rules:
+	All Traffic	All	All	(source=security group criado)
+	SSH		TCP	22	Anywhere
+-	Outbound rules:
+	All traffic	All	All	Anywhere
+-	Criado o security Group, foram iniciadas duas instâncias com base na imagem criada anteriormente, configuração m5.large;
+-	As instâncias foram inseridas no mesmo Placement Group e Security Group;
+-	Com as máquinas criadas e inicializadas, a primeira máquina foi acessada, e o seguinte comando executado:
+	cd /Distributed-DCGAN
+-	Uma vez dentro da pasta, utilizou-se o comando:
+sudo docker run -p 1234:1234 --env OMP_NUM_THREADS=1 --rm --network=host -v=$(pwd):/root dist_dcgan:latest python -m torch.distributed.launch --nproc_per_node=1 --nnodes=2 --node_rank=0 --master_addr="172.31.64.139" --master_port=1234 dist_dcgan.py --dataset cifar10 --dataroot ./experiments/ativ-6-exp-1/cifar10 --num_epochs=1
+-	Semelhantemente na máquina 2, mas com o comando:
+sudo docker run -p 1234:1234 --env OMP_NUM_THREADS=1 --rm --network=host -v=$(pwd):/root dist_dcgan:latest python -m torch.distributed.launch --nproc_per_node=1 --nnodes=2 --node_rank=1 --master_addr="172.31.64.139" --master_port=1234 dist_dcgan.py --dataset cifar10 --dataroot ./experiments/ativ-6-exp-1/cifar10 --num_epochs=1
+-	As máquinas executaram o treinamento normalmente, finalizando uma época de treinamento em:
+	máquina 1: 1073.5601 seconds;
+	máquina 2: 1073.5662 seconds;
+
+
