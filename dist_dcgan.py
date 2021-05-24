@@ -15,6 +15,7 @@ import torchvision.datasets as dset
 import torchvision.utils as vutils
 
 initTime = time.time()
+curpath= os.path.abspath(os.curdir)
 
 class Generator(nn.Module):
     def __init__(self, nz, ngf, nc):
@@ -235,9 +236,9 @@ def main():
 
             iteration_end_time = time.time()-iteration_start_time
             # initialization time - Henrique
-            global initTime
+            global initTime, curpath
             if i == 0:
-                with open(f"experiments/ativ-7-exp-1/results/{socket.gethostname()}-rank{rank}.out", 'w') as arquivo:
+                with open(os.path.join(curpath, (f'experiments/ativ-7-exp-1/results/{socket.gethostname()}-rank{rank}.out')), 'w') as arquivo:
                     arquivo.write(f"Rank: {rank}, Initialization Time: {(time.time() - initTime):.4f}s.\n")
 
             print(f"[epoch: {epoch}/{argv.num_epochs}][iteration: {i}/{len(train_loader)}][rank: {rank}] " \
@@ -251,12 +252,12 @@ def main():
                 vutils.save_image(fake.detach(), f'{argv.out_folder}/fake_samples_rank_{rank}_epoch_{epoch}_iter_{i}.png', normalize=True)
                 torch.distributed.barrier()
             
-            with open(f"experiments/ativ-7-exp-1/results/{socket.gethostname()}-rank{rank}.out", 'a+') as arquivo:
+            with open(os.path.join(curpath, (f'experiments/ativ-7-exp-1/results/{socket.gethostname()}-rank{rank}.out')), 'a+') as arquivo:
                 arquivo.write(f"Rank: {rank}, Epoch: {epoch}, Iteration: {i}, Iteration Time: {iteration_end_time:.4f}s, Elapsed Time: {(time.time() - initTime):.4f}s.\n")
 
         epoch_end_time = time.time()-epoch_start_time
         print(f"[rank: {rank}] Epoch {epoch} took: {epoch_end_time:.4f} seconds")
-        with open(f"experiments/ativ-7-exp-1/results/{socket.gethostname()}-rank{rank}.out", 'a+') as arquivo:
+        with open(os.path.join(curpath, (f'experiments/ativ-7-exp-1/results/{socket.gethostname()}-rank{rank}.out')), 'a+') as arquivo:
             arquivo.write(f"Rank: {rank}, Epoch: {epoch}, Iteration: {i}, Epoch Time: {epoch_end_time:.4f}s, Elapsed Time: {(time.time() - initTime):.4f}s.\n")
 
     torch.distributed.destroy_process_group()
