@@ -194,6 +194,8 @@ def main():
         epoch_start_time = time.time()
         print(f"Rank: {rank}, Epoch: {epoch}, Training ...")
         for i, data in enumerate(train_loader):
+            if i >= 20:
+                break
             iteration_start_time = time.time()
             ############################
             # (1) Update D network: maximize log(D(x)) + log(1 - D(G(z)))
